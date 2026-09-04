@@ -2,6 +2,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local TeleportService = game:GetService("TeleportService")
 
 -- Packages
 local knit = require(ReplicatedStorage.src.Packages.knit)
@@ -27,7 +28,9 @@ end
 -->
 local MatchMakingService = knit.CreateService({
 	Name = "MatchMakingService",
+	PlaceId = 91322815196905,
 	PlayersInTeleportQueue = {},
+	MaxPlayers = 4,
 	Queues = (function()
 		local tableToReturn = {}
 		for _, hitbox in pairs(MatchHitboxes:GetChildren()) do
@@ -39,13 +42,28 @@ local MatchMakingService = knit.CreateService({
 
 -- Private Methods
 function MatchMakingService:teleportPlayers(id: number)
-	print("Telporting Players To Server")
+	print("Teleporting Players To Server")
 	local players = table.clone(self.Queues[id])
 	self.Queues[id] = {}
 
 	for _, player: Player in pairs(players) do
 		table.insert(self.PlayersInTeleportQueue, player)
 	end
+
+	local status, accessCode = pcall(function()
+		return TeleportService:ReserveServerAsync(self.PlaceId)
+	end)
+
+	if not status then
+		for _, player: Player in pairs(players) do
+			self:RemovePlayerFromTeleportQueue(player)
+		end
+
+		warn(accessCode)
+		return
+	end
+
+	TeleportService:TeleportToPrivateServer(self.PlaceId, accessCode, players)
 end
 
 function MatchMakingService:listenToHitboxes()
@@ -59,6 +77,10 @@ function MatchMakingService:listenToHitboxes()
 
 			-- Remove Players In Teleport Queue
 			for _, player: Player in pairs(self.PlayersInTeleportQueue) do
+				local index = table.find(playersInHitbox, player)
+				if index then
+					table.remove(playersInHitbox, index)
+				end
 			end
 
 			-- Detect Changes
@@ -66,9 +88,9 @@ function MatchMakingService:listenToHitboxes()
 			local toRemove = {}
 			for index, playerInHitbox: Player in pairs(playersInHitbox) do
 				if table.find(self.Queues[id], playerInHitbox) then
-					-- Player Joined
+				-- Player already in queue
 				elseif
-					#self.Queues[id] >= 1
+					#self.Queues[id] >= self.MaxPlayers
 					and not table.find(self.Queues[id], playerInHitbox)
 					and not table.find(self.PlayersInTeleportQueue, playerInHitbox)
 				then
@@ -77,8 +99,12 @@ function MatchMakingService:listenToHitboxes()
 				end
 			end
 
-			for _, index in pairs(toRemove) do
-				playersInHitbox[index] = nil
+			for index = #toRemove, 1, -1 do
+				table.remove(playersInHitbox, toRemove[index])
+			end
+
+			while #playersInHitbox > self.MaxPlayers do
+				table.remove(playersInHitbox)
 			end
 
 			-- Detect Player Exits
@@ -90,6 +116,9 @@ function MatchMakingService:listenToHitboxes()
 
 			-- Update Queues Table
 			self.Queues[id] = playersInHitbox
+			if #self.Queues[id] >= self.MaxPlayers then
+			end
+
 			if #self.Queues[id] > 0 then
 				if not countdowns[id] then
 					countdowns[id] = 10
@@ -114,15 +143,23 @@ function MatchMakingService:listenToHitboxes()
 				countdowns[id] = nil
 			end
 		end
-
-		print(self.Queues)
-		print(countdowns)
 	end)
+end
+
+-- Public Methods
+function MatchMakingService:RemovePlayerFromTeleportQueue(player: Player)
+	local index = table.find(self.PlayersInTeleportQueue, player)
+	if index then
+		table.remove(self.PlayersInTeleportQueue, index)
+	end
 end
 
 -- LifeCycle
 function MatchMakingService:KnitStart()
 	self:listenToHitboxes()
+	TeleportService.TeleportInitFailed:Connect(function(player: Player)
+		self:RemovePlayerFromTeleportQueue(player)
+	end)
 end
 
 return MatchMakingService

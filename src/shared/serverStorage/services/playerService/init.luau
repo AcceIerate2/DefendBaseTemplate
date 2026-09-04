@@ -56,6 +56,8 @@ function PlayerService:load(player: Player)
 end
 
 function PlayerService:unload(player: Player)
+	self.MatchMakingService:RemovePlayerFromTeleportQueue(player)
+
 	local playerDisconnectFunctions = self.DisconnectFunctions[player]
 	if not TypeCheck.table(playerDisconnectFunctions) then
 		return
@@ -78,6 +80,7 @@ function PlayerService:KnitInit()
 	self.DataService = knit.GetService("DataService")
 	self.MonetizationService = knit.GetService("MonetizationService")
 	self.BadgeService = knit.GetService("BadgeService")
+	self.MatchMakingService = knit.GetService("MatchMakingService")
 
 	-- Player Connections
 	Players.PlayerAdded:Connect(function(player: Player)
