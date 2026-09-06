@@ -9,6 +9,11 @@ function BackPack:preloadCards()
 		newCard.Visible = true
 		newCard.Name = `{i}`
 		newCard.LayoutOrder = i
+
+		newCard:AddTag("GuiButton")
+		newCard:SetAttribute("Type", "Action")
+		newCard:SetAttribute("Action", "")
+
 		newCard.Parent = self.Container
 	end
 end
