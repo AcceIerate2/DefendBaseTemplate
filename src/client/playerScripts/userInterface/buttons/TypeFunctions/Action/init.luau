@@ -7,6 +7,7 @@ local TypeCheck = require(ReplicatedStorage.src.utility.TypeCheck)
 -->
 local functions = {
 	ToggleEquip = require(script.toggleEquipAction),
+	ViewCrate = require(script.viewCrateAction),
 }
 
 return function(button)

@@ -9,6 +9,7 @@ local viewportHandler = require(ReplicatedStorage.src.utility.viewportHandler)
 local cratesConfig = require(ReplicatedStorage.src.GameConfiguration.General.cratesConfig)
 local itemConfig = require(ReplicatedStorage.src.GameConfiguration.General.itemConfig)
 local rarityColors = require(ReplicatedStorage.src.GameConfiguration.General.rarityColors)
+local knit = require(ReplicatedStorage.src.Packages.knit)
 
 -- Constants
 local ItemAssets = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Items")
@@ -25,7 +26,8 @@ function CratesGui:preloadCards()
 		newCard.Name = name
 
 		newCard.LayoutOrder = config.Cost
-		newCard:WaitForChild("Labels"):WaitForChild("Cost"):WaitForChild("Label").Text = `${NumberShortner(config.Cost)}`
+		newCard:WaitForChild("Labels"):WaitForChild("Cost"):WaitForChild("Label").Text =
+			`${NumberShortner(config.Cost)}`
 		newCard:WaitForChild("Labels"):WaitForChild("ViewButton"):WaitForChild("Button"):SetAttribute("CrateName", name)
 		newCard:WaitForChild("Title").Text = name:gsub("%u", " %0"):gsub("^%s+", "")
 		newCard:WaitForChild("ViewportFrame"):WaitForChild("ImageLabel").Image = config.Icon
@@ -39,14 +41,14 @@ function CratesGui:preloadCards()
 		itemTemplate.Visible = false
 
 		for itemName: string, weight: number in pairs(config.Items) do
-			local percent = math.round((weight/totalWeight) * 100)
-			local rarity = itemConfig[itemName].Rarity	
+			local percent = math.round((weight / totalWeight) * 100)
+			local rarity = itemConfig[itemName].Rarity
 			local rarityColor = rarityColors[rarity]
 
 			local newItemCard = itemTemplate:Clone()
 			newItemCard:WaitForChild("Percent").Text = `%{percent}`
 			newItemCard:WaitForChild("Gradient").BackgroundColor3 = rarityColor
-			
+
 			local itemAsset = ItemAssets:WaitForChild(itemName)
 			viewportHandler.Setup(newItemCard:WaitForChild("ViewportFrame"), itemAsset, {
 				Padding = 1,
@@ -69,6 +71,19 @@ function CratesGui:Init(player: Player)
 	self.Template = self.Container:WaitForChild("Template")
 	self.Template.Visible = false
 	self:preloadCards()
+
+	self.CratesInfoPanel = player.PlayerGui:WaitForChild("Panels"):WaitForChild("CrateInfo")
+	self.PanelController = knit.GetController("PanelController")
+	self.PanelController.PanelStateChanged:Connect(function(newState: { Visible: boolean, PanelName: string })
+		if newState.PanelName == "CrateInfo" and newState.Visible then
+			local crateName = self.CratesInfoPanel:GetAttribute("CrateName")
+			self.CratesInfoPanel:WaitForChild("Header"):WaitForChild("TextLabel").Text =
+				`{crateName:gsub("%u", " %0"):gsub("^%s+", "")}`
+
+			self.CratesInfoPanel:WaitForChild("Header"):WaitForChild("Gradient").BackgroundColor3 =
+				cratesConfig[crateName].Color
+		end
+	end)
 end
 
 return CratesGui
