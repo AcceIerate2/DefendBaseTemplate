@@ -45,6 +45,7 @@ function CashController:listenToService()
 	end)
 end
 
+-- LifeCycle
 function CashController:KnitInit()
 	self.EffectController = knit.GetController("EffectController")
 	self:listenToService()
