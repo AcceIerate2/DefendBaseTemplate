@@ -11,7 +11,7 @@ local knit = require(ReplicatedStorage.src.Packages.knit)
 local TypeCheck = require(ReplicatedStorage.src.utility.TypeCheck)
 
 -- Essentials
-camera = workspace.CurrentCamera
+local camera = workspace.CurrentCamera
 
 -- Helpers
 local CreateTween = TweenService.Create
