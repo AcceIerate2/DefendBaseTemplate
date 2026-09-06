@@ -5,7 +5,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TypeCheck = require(ReplicatedStorage.src.utility.TypeCheck)
 
 -->
-local functions = {}
+local functions = {
+	ToggleEquip = require(script.toggleEquipAction),
+}
 
 return function(button)
 	if not button then

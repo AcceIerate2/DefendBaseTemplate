@@ -1,7 +1,12 @@
 return {
 	DataTemplate = {
-		Cash = 500000,
-		Rebirths = 0,
+		Coins = 500000,
+		Wins = 0,
+
+		Equipped = {},
+		Inventory = { BasicUnit = true },
+
+		Slot5 = false,
 
 		LastSeen = 0,
 		JoinedBefore = false,

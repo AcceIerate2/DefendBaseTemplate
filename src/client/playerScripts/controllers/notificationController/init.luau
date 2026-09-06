@@ -25,6 +25,7 @@ local NotificationController = knit.CreateController({
 	Duration = 3,
 })
 
+-- Private Methods
 function NotificationController:resetCanvasPosition()
 	self.canvasPositionReset:Fire()
 end
@@ -34,7 +35,8 @@ function NotificationController:mutateCanvasPosition(position: UDim2)
 	self.canvasPositionChanged:Fire(position)
 end
 
-function NotificationController:push(notificationData)
+-- Public Methods
+function NotificationController:Push(notificationData)
 	assert(TypeCheck.table(notificationData), "notificationData arg must be a Table")
 	if not TypeCheck.string(notificationData.Message) then
 		return
@@ -46,7 +48,7 @@ function NotificationController:push(notificationData)
 	self.Notifications[id] = notificationData
 
 	if notificationData.Sound then
-		soundHandler:play(notificationData.Sound, {
+		self.AudioController:PlaySound(notificationData.Sound, {
 			PlayOver = true,
 			Parent = SoundService,
 		})
@@ -63,6 +65,7 @@ function NotificationController:push(notificationData)
 	end)
 end
 
+-- LifeCycle
 function NotificationController:KnitInit()
 	print("NotificationController Initiated.")
 end

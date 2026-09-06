@@ -1,0 +1,5 @@
+return {
+	BasicUnit = {
+		Rarity = "Common",
+	},
+}
