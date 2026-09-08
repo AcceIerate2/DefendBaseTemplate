@@ -64,7 +64,13 @@ function CrateService:OpenCrate(player: Player, crateName: string, amount: numbe
 	end
 
 	self.DataService:GetValueObject(player, "Coins"):Set(self.DataService:GetValue(player, "Coins") - cost)
-	return { Status = true, ItemName = self:rngItem(crateConfig.Items) }
+	
+	local items = {}
+	for i = amount, 1, -1 do
+		items[i] = self:rngItem(crateConfig.Items)
+	end
+
+	return { Status = true, Items = items}
 end
 
 -- LifeCycle

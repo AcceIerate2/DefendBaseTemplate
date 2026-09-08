@@ -17,7 +17,7 @@ local CrateController = knit.CreateController({
 function CrateController:OpenCrate(crateName: string, amount: number)
 	self.CrateService
 		:OpenCrate(crateName, amount)
-		:andThen(function(response: { Status: boolean, Reason: string?, ItemName: string? })
+		:andThen(function(response: { Status: boolean, Reason: string?, Items: {number: string}? })
 			if not response.Status and typeof(response.Reason) == "string" then
 				self.NotificationController:Push({
 					Message = response.Reason,
@@ -29,7 +29,7 @@ function CrateController:OpenCrate(crateName: string, amount: number)
 
 			self.PanelController:togglePanel("CrateInfo")
 			self.HudController:ToggleVisibility(false)
-			self.Signals.Animate:Fire(crateName, response.ItemName, amount)
+			self.Signals.Animate:Fire(crateName, response.Items, amount)
 		end)
 		:catch(warn)
 end

@@ -207,7 +207,6 @@ function CrateRngGui:getResults(rewards: any, amount: number?)
 	end
 
 	local results = table.create(amount or 1)
-
 	for index = 1, amount or 1 do
 		results[index] = rewards
 	end
@@ -262,7 +261,7 @@ function CrateRngGui:Init()
 
 	self.CrateController = knit.GetController("CrateController")
 
-	self.CrateController.Signals.Animate:Connect(function(crateName: string, rewards: any, amount: number?)
+	self.CrateController.Signals.Animate:Connect(function(crateName: string, rewards: {number: string}, amount: number?)
 		self:clear()
 		self:setup(crateName, rewards, amount)
 	end)
