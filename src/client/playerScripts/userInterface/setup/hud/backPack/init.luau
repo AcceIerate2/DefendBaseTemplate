@@ -52,7 +52,7 @@ end
 function BackPack:Init(player: Player)
 	self.DataController = knit.GetController("DataController")
 
-	self.Container = player.PlayerGui:WaitForChild("BackPack"):WaitForChild("Container")
+	self.Container = player.PlayerGui:WaitForChild("Hud"):WaitForChild("Container"):WaitForChild("BackPack")
 	self.Template = self.Container:WaitForChild("Template")
 	self.Template.Visible = false
 	self:preloadCards()

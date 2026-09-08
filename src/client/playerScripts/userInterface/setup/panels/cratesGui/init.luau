@@ -1,6 +1,9 @@
 -- Roblox Services
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+-- Packages
+local knit = require(ReplicatedStorage.src.Packages.knit)
+
 -- Utility Modules
 local NumberShortner = require(ReplicatedStorage.src.utility.NumberShortner)
 local viewportHandler = require(ReplicatedStorage.src.utility.viewportHandler)
@@ -9,7 +12,6 @@ local viewportHandler = require(ReplicatedStorage.src.utility.viewportHandler)
 local cratesConfig = require(ReplicatedStorage.src.GameConfiguration.General.cratesConfig)
 local itemConfig = require(ReplicatedStorage.src.GameConfiguration.General.itemConfig)
 local rarityColors = require(ReplicatedStorage.src.GameConfiguration.General.rarityColors)
-local knit = require(ReplicatedStorage.src.Packages.knit)
 
 -- Constants
 local ItemAssets = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Items")
@@ -24,6 +26,9 @@ function CratesGui:preloadCards()
 	do
 		local newCard = self.Template:Clone()
 		newCard.Name = name
+
+		local color = cratesConfig[name].Color
+		newCard:WaitForChild("Gradient").BackgroundColor3 = color
 
 		newCard.LayoutOrder = config.Cost
 		newCard:WaitForChild("Labels"):WaitForChild("Cost"):WaitForChild("Label").Text =
@@ -82,6 +87,28 @@ function CratesGui:Init(player: Player)
 
 			self.CratesInfoPanel:WaitForChild("Header"):WaitForChild("Gradient").BackgroundColor3 =
 				cratesConfig[crateName].Color
+
+			local container = self.CratesInfoPanel:WaitForChild("Body"):WaitForChild("ScrollingFrame")
+			local template = container:WaitForChild("Template")
+			template.Visible = false
+
+			for itemName: string, percent: number in pairs(cratesConfig[crateName].Items) do
+				local clone = template:Clone()
+				clone:WaitForChild("ItemName").Text = itemName:gsub("%u", " %0"):gsub("^%s+", "")
+
+				local rarity = itemConfig[itemName].Rarity
+				clone:WaitForChild("Rarity").Text = rarity
+				clone:WaitForChild("Rarity").TextColor3 = rarityColors[rarity]
+				clone:WaitForChild("Gradient").BackgroundColor3 = rarityColors[rarity]
+
+				local itemAsset = ItemAssets:WaitForChild(itemName)
+				viewportHandler.Setup(clone:WaitForChild("ViewportFrame"), itemAsset, {
+					Padding = 2,
+				})
+
+				clone.Visible = true
+				clone.Parent = container
+			end
 		end
 	end)
 end
