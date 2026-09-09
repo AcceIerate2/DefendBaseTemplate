@@ -35,6 +35,7 @@ local CrateRngGui = {
 
 -- Private Methods
 function CrateRngGui:clear()
+	CanvasGroup.Parent.Enabled = false
 	CanvasGroup.Visible = false
 	CanvasGroup.GroupTransparency = 1
 
@@ -183,7 +184,7 @@ function CrateRngGui:loadItems(row, crateName: string, actualReward: string)
 	return winnerCard
 end
 
-function CrateRngGui:animate(row, winnerCard)
+function CrateRngGui:animate(row, winnerCard, onFinished)
 	local content = row:WaitForChild("Content")
 	local strip = content:WaitForChild("Items")
 	local center = row:WaitForChild("Center")
@@ -198,7 +199,7 @@ function CrateRngGui:animate(row, winnerCard)
 
 	PlayTween(strip, TweenInfo.new(SPIN_DURATION, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
 		Position = UDim2.fromOffset(targetX, 0),
-	})
+	}, onFinished)
 end
 
 function CrateRngGui:getResults(rewards: any, amount: number?)
@@ -214,10 +215,11 @@ function CrateRngGui:getResults(rewards: any, amount: number?)
 	return results
 end
 
-function CrateRngGui:setup(crateName: string, rewards: any, amount: number?)
+function CrateRngGui:setup(crateName: string, rewards: any, amount: number?, callback)
 	local results = self:getResults(rewards, amount)
 	local spins = {}
 
+	CanvasGroup.Parent.Enabled = true
 	CanvasGroup.GroupTransparency = 1
 	CanvasGroup.Visible = true
 
@@ -244,12 +246,20 @@ function CrateRngGui:setup(crateName: string, rewards: any, amount: number?)
 		GroupTransparency = 0,
 	})
 
+	local completedSpins = 0
+	local totalSpins = #spins
+
 	for _, spin in ipairs(spins) do
 		PlayTween(spin.Row, TweenInfo.new(0.15), {
 			GroupTransparency = 0,
 		})
 
-		self:animate(spin.Row, spin.WinnerCard)
+		self:animate(spin.Row, spin.WinnerCard, function()
+			completedSpins += 1
+			if completedSpins >= totalSpins then
+				callback:Fire()
+			end
+		end)
 	end
 end
 
@@ -261,10 +271,12 @@ function CrateRngGui:Init()
 
 	self.CrateController = knit.GetController("CrateController")
 
-	self.CrateController.Signals.Animate:Connect(function(crateName: string, rewards: {number: string}, amount: number?)
-		self:clear()
-		self:setup(crateName, rewards, amount)
-	end)
+	self.CrateController.Signals.Animate:Connect(
+		function(crateName: string, rewards: { number: string }, amount: number?, callback)
+			self:clear()
+			self:setup(crateName, rewards, amount, callback)
+		end
+	)
 end
 
 return CrateRngGui

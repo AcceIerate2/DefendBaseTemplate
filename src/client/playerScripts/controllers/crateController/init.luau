@@ -10,6 +10,7 @@ local CrateController = knit.CreateController({
 	Name = "CrateController",
 	Signals = {
 		Animate = Signal.new(),
+		AnimateNewItems = Signal.new(),
 	},
 })
 
@@ -17,20 +18,30 @@ local CrateController = knit.CreateController({
 function CrateController:OpenCrate(crateName: string, amount: number)
 	self.CrateService
 		:OpenCrate(crateName, amount)
-		:andThen(function(response: { Status: boolean, Reason: string?, Items: {number: string}? })
-			if not response.Status and typeof(response.Reason) == "string" then
-				self.NotificationController:Push({
-					Message = response.Reason,
-					Color = Color3.fromRGB(255, 0, 0),
-					Sound = "Decline",
-				})
-				return
-			end
+		:andThen(
+			function(response: { Status: boolean, Reason: string?, Items: { number: string }? }, NewItems: { string })
+				if not response.Status and typeof(response.Reason) == "string" then
+					self.NotificationController:Push({
+						Message = response.Reason,
+						Color = Color3.fromRGB(255, 0, 0),
+						Sound = "Decline",
+					})
+					return
+				end
 
-			self.PanelController:togglePanel("CrateInfo")
-			self.HudController:ToggleVisibility(false)
-			self.Signals.Animate:Fire(crateName, response.Items, amount)
-		end)
+				self.PanelController:togglePanel("CrateInfo")
+				self.HudController:ToggleVisibility(false)
+
+				local callback = Signal.new()
+				callback:Once(function()
+					callback:DisconnectAll()
+					callback:Destroy()
+					self.Signals.AnimateNewItems:Fire(NewItems)
+				end)
+
+				self.Signals.Animate:Fire(crateName, response.Items, amount, callback)
+			end
+		)
 		:catch(warn)
 end
 
