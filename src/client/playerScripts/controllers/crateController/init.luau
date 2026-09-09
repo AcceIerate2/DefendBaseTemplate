@@ -19,7 +19,7 @@ function CrateController:OpenCrate(crateName: string, amount: number)
 	self.CrateService
 		:OpenCrate(crateName, amount)
 		:andThen(
-			function(response: { Status: boolean, Reason: string?, Items: { number: string }? }, NewItems: { string })
+			function(response: { Status: boolean, Reason: string?, Items: { number: string }?, NewItems: { string } })
 				if not response.Status and typeof(response.Reason) == "string" then
 					self.NotificationController:Push({
 						Message = response.Reason,
@@ -36,7 +36,16 @@ function CrateController:OpenCrate(crateName: string, amount: number)
 				callback:Once(function()
 					callback:DisconnectAll()
 					callback:Destroy()
-					self.Signals.AnimateNewItems:Fire(NewItems)
+
+					if #response.NewItems > 0 then
+						self.Signals.AnimateNewItems:Fire(response.NewItems, function()
+							self.PanelController:togglePanel("CrateInfo")
+							self.HudController:ToggleVisibility(true)
+						end)
+					else
+						self.PanelController:togglePanel("CrateInfo")
+						self.HudController:ToggleVisibility(true)
+					end
 				end)
 
 				self.Signals.Animate:Fire(crateName, response.Items, amount, callback)

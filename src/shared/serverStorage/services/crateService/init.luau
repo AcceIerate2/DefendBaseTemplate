@@ -64,13 +64,24 @@ function CrateService:OpenCrate(player: Player, crateName: string, amount: numbe
 	end
 
 	self.DataService:GetValueObject(player, "Coins"):Set(self.DataService:GetValue(player, "Coins") - cost)
-	
+
 	local items = {}
 	for i = amount, 1, -1 do
 		items[i] = self:rngItem(crateConfig.Items)
 	end
 
-	return { Status = true, Items = items}
+	local newItems = {}
+	for _, itemName in pairs(items) do
+		if not self.DataService:GetValue(player, "Inventory")[itemName] then
+			self.DataService:GetValueObject(player, "Inventory"):Update(function(newTable)
+				newTable[itemName] = true
+			end)
+
+			table.insert(newItems, itemName)
+		end
+	end
+
+	return { Status = true, Items = items, NewItems = newItems }
 end
 
 -- LifeCycle

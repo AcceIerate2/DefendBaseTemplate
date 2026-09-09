@@ -92,6 +92,12 @@ function CratesGui:Init(player: Player)
 			local template = container:WaitForChild("Template")
 			template.Visible = false
 
+			for _, child in pairs(container:GetChildren()) do
+				if child ~= template and child:IsA("GuiButton") then
+					child:Destroy()
+				end
+			end
+
 			for itemName: string, percent: number in pairs(cratesConfig[crateName].Items) do
 				local clone = template:Clone()
 				clone:WaitForChild("ItemName").Text = itemName:gsub("%u", " %0"):gsub("^%s+", "")

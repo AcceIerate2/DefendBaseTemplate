@@ -4,7 +4,7 @@ return {
 		Wins = 0,
 
 		Equipped = {},
-		Inventory = { BasicUnit = true },
+		Inventory = {},
 
 		Slot5 = false,
 
