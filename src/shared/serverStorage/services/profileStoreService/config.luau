@@ -1,7 +1,9 @@
 return {
 	DataTemplate = {
-		Coins = 500000,
+		Coins = 0,
 		Wins = 0,
+
+		LastClaimedGroupChest = 0,
 
 		Equipped = {},
 		Inventory = {},

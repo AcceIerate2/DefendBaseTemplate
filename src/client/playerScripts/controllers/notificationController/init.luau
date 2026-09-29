@@ -68,6 +68,14 @@ end
 -- LifeCycle
 function NotificationController:KnitInit()
 	print("NotificationController Initiated.")
+	self.NotificationService = knit.GetService("NotificationService")
+	self.AudioController = knit.GetController("AudioController")
+end
+
+function NotificationController:KnitStart()
+	self.NotificationService.PushNotification:Connect(function(data: { Message: string, Color: Color3, Sound: string })
+		self:Push(data)
+	end)
 end
 
 return NotificationController
